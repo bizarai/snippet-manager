@@ -27,7 +27,7 @@ export default function TestPage() {
         draggable="true"
         onDragStart={handleDragStart}
       >
-        "The only way to do great work is to love what you do." - Steve Jobs
+        &quot;The only way to do great work is to love what you do.&quot; - Steve Jobs
       </div>
 
       <div 
@@ -52,12 +52,13 @@ function HelloWorld() {
       </div>
 
       <div className="fixed bottom-4 right-4">
-        <a 
+        import Link from 'next/link';
+        <Link
           href="/"
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
         >
           Back to Snippet Manager
-        </a>
+        </Link>
       </div>
     </div>
   );
