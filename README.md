@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Snippet Manager
+
+A simple web application for saving and managing text snippets from the web.
+
+## Features
+
+- Drag and drop text snippets from any website
+- Persistent storage using IndexedDB (more robust than localStorage)
+- Export and import snippets as JSON files
+- Add comments to any snippet
+- Search through your snippets
+- Pagination for better organization
+- Links to source URLs
+
+## Storage Options
+
+The application offers two storage methods:
+
+1. **IndexedDB (Default)** - More persistent storage that usually survives browser history clearing
+2. **localStorage** - Traditional web storage (may be cleared when clearing browser history)
+
+## How to Use
+
+1. Drag text from any webpage to the drop area
+2. View your snippets by expanding them
+3. Add comments to any snippet
+4. Export your snippets to back them up
+5. Import snippets on any device
+
+## Development
+
+This project is built with:
+
+- Next.js 15
+- React 19
+- TypeScript
+- Tailwind CSS
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build for production
+npm run build
+
+# Export static site
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The application is configured to deploy to GitHub Pages automatically via GitHub Actions. Simply push to the main branch, and the action will build and deploy the site.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## License
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
