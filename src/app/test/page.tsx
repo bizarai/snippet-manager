@@ -1,6 +1,7 @@
 "use client"
 
 import { usePathname } from 'next/navigation';
+import Link from 'next/link'; // Add this import
 
 export default function TestPage() {
   const pathname = usePathname();
@@ -52,7 +53,6 @@ function HelloWorld() {
       </div>
 
       <div className="fixed bottom-4 right-4">
-      import Link from 'next/link';
         <Link
           href="/"
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
