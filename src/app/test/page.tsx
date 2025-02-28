@@ -1,7 +1,8 @@
+// src/app/test/page.tsx
 "use client"
 
 import { usePathname } from 'next/navigation';
-import Link from 'next/link'; // Add this import
+import Link from 'next/link';
 
 export default function TestPage() {
   const pathname = usePathname();
@@ -11,6 +12,13 @@ export default function TestPage() {
     e.dataTransfer.setData('text/source-url', window.location.origin + pathname);
     e.dataTransfer.setData('text/page-title', 'Test Content Page');
     e.dataTransfer.setData('text/plain', e.currentTarget.textContent || '');
+    
+    // Make sure data is properly set with fallbacks
+    console.log('Drag started:', {
+      url: window.location.origin + pathname,
+      title: 'Test Content Page',
+      text: e.currentTarget.textContent
+    });
   };
 
   return (
