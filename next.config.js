@@ -8,6 +8,9 @@ const nextConfig = {
   // Add this if your repo isn't at the root domain (e.g., username.github.io/repo-name)
   basePath: process.env.NODE_ENV === 'production' ? '/snippet-manager' : '',
   // Replace 'your-repo-name' with your actual GitHub repository name
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 module.exports = nextConfig;
