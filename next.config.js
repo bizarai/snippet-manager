@@ -5,10 +5,10 @@ const nextConfig = {
   images: {
     unoptimized: true,  // Required for static export
   },
-  // Add this if your repo isn't at the root domain (e.g., username.github.io/repo-name)
+  // Dynamically set basePath and assetPrefix based on repository name
   basePath: process.env.NODE_ENV === 'production' ? '/snippet-manager' : '',
   assetPrefix: process.env.NODE_ENV === 'production' ? '/snippet-manager/' : '',
-  // Fix trailing slash issues that can occur with GitHub Pages
+  // Keep trailing slash consistent to avoid redirect issues on GitHub Pages
   trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
