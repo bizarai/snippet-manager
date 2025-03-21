@@ -18,10 +18,21 @@ interface Snippet {
 type StorageMethod = 'localStorage' | 'indexedDB';
 
 const SnippetManager = () => {
-  // Use custom storage hook with indexedDB as the default
+  // Check if indexedDB is fully supported
+  const isIndexedDBSupported = () => {
+    try {
+      return typeof indexedDB !== 'undefined' && 
+        indexedDB !== null &&
+        typeof window !== 'undefined';
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // Use localStorage as default on GitHub Pages to avoid cross-origin issues
   const [storageMethod, setStorageMethod] = useState<StorageMethod>(
     // Check if indexedDB is available, fallback to localStorage
-    typeof window !== 'undefined' && 'indexedDB' in window ? 'indexedDB' : 'localStorage'
+    isIndexedDBSupported() ? 'indexedDB' : 'localStorage'
   );
   
   const [snippets, setSnippets, loading] = useStorage<Snippet[]>('snippets', [], {
@@ -36,11 +47,20 @@ const SnippetManager = () => {
   const [commentText, setCommentText] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [importExportOpen, setImportExportOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const snippetsPerPage = 20;
 
   // Handle switching storage methods
   const switchStorageMethod = async (method: StorageMethod) => {
     if (method === storageMethod) return;
+    
+    // If trying to switch to IndexedDB but it's not supported, show an error
+    if (method === 'indexedDB' && !isIndexedDBSupported()) {
+      setError('IndexedDB is not supported in this browser or context.');
+      return;
+    }
+    
+    setError(null);
     
     // First, get the current snippets
     const currentSnippets = [...snippets];
@@ -57,6 +77,13 @@ const SnippetManager = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const text = e.dataTransfer.getData('text/plain');
+    
+    if (!text) {
+      setError('No text content found in the dropped selection.');
+      return;
+    }
+    
+    setError(null);
     
     // Get source URL from dragstart event data or fallback to current URL
     const sourceUrl = e.dataTransfer.getData('text/source-url') || window.location.href;
@@ -110,15 +137,22 @@ const SnippetManager = () => {
 
   // Export snippets to a JSON file
   const exportSnippets = () => {
-    const dataStr = JSON.stringify(snippets, null, 2);
-    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-    
-    const exportFileDefaultName = `snippet-manager-export-${new Date().toISOString().slice(0, 10)}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+    try {
+      const dataStr = JSON.stringify(snippets, null, 2);
+      const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+      
+      const exportFileDefaultName = `snippet-manager-export-${new Date().toISOString().slice(0, 10)}.json`;
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      
+      setError(null);
+    } catch (error) {
+      setError('Failed to export snippets. Please try again.');
+      console.error('Export error:', error);
+    }
   };
 
   // Import snippets from a JSON file
@@ -132,12 +166,26 @@ const SnippetManager = () => {
             const importedSnippets = JSON.parse(e.target.result as string) as Snippet[];
             // Append the imported snippets to existing ones
             setSnippets([...importedSnippets, ...snippets]);
+            setError(null);
           } catch (error) {
-            alert("Invalid JSON file. Please select a valid snippet export file.");
+            setError("Invalid JSON file. Please select a valid snippet export file.");
+            console.error('Import error:', error);
           }
         }
       };
+      fileReader.onerror = () => {
+        setError("Failed to read the file. Please try again.");
+      };
     }
+  };
+
+  // Handle basePath for GitHub Pages links
+  const getBasePath = () => {
+    // In production, we need to include the basePath
+    if (process.env.NODE_ENV === 'production') {
+      return '/snippet-manager';
+    }
+    return '';
   };
 
   // Filter snippets by search term
@@ -210,6 +258,18 @@ const SnippetManager = () => {
         </div>
       </div>
       
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+          {error}
+          <button 
+            className="float-right text-red-500 hover:text-red-700" 
+            onClick={() => setError(null)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      
       {importExportOpen && (
         <div className="mb-6 p-4 border rounded-lg bg-gray-50">
           <h2 className="text-lg font-semibold mb-3">Import/Export Snippets</h2>
@@ -274,7 +334,7 @@ const SnippetManager = () => {
       {snippets.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
           <p className="text-gray-600">No snippets saved yet.</p>
-          <Link href="/test" className="text-blue-600 hover:underline mt-2 inline-block">
+          <Link href={`${getBasePath()}/test`} className="text-blue-600 hover:underline mt-2 inline-block">
             Go to test page to try it out
           </Link>
         </div>
