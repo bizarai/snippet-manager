@@ -4,13 +4,16 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
+// Get the correct base path for assets
+const basePath = process.env.NODE_ENV === 'production' ? '/snippet-manager' : '';
+
 export const metadata: Metadata = {
   title: "Snippet Manager",
   description: "Save and manage text snippets from the web",
   icons: {
     icon: [
-      { url: './file.svg', type: 'image/svg+xml' },
-      { url: './favicon.ico', sizes: 'any' }
+      { url: `${basePath}/file.svg`, type: 'image/svg+xml' },
+      { url: `${basePath}/favicon.ico`, sizes: 'any' }
     ],
   }
 };
