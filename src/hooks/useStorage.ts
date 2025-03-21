@@ -20,22 +20,57 @@ export function useStorage<T>(
   const [loading, setLoading] = useState(true);
   const { storageType, dbName = 'snippetManagerDB', storeName = 'snippets' } = options;
 
+  // Check if IndexedDB is fully supported
+  const isIndexedDBSupported = () => {
+    try {
+      return typeof indexedDB !== 'undefined' && 
+        indexedDB !== null &&
+        typeof window !== 'undefined';
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // Get effective storage type based on browser support
+  const getEffectiveStorageType = (): StorageType => {
+    if (storageType === 'indexedDB' && !isIndexedDBSupported()) {
+      console.warn('IndexedDB not supported, falling back to localStorage');
+      return 'localStorage';
+    }
+    return storageType;
+  };
+
   // Load the initial value
   useEffect(() => {
     const loadInitialValue = async () => {
       try {
-        if (storageType === 'localStorage') {
-          const savedValue = localStorage.getItem(key);
-          if (savedValue !== null) {
-            setValue(JSON.parse(savedValue));
+        const effectiveStorageType = getEffectiveStorageType();
+        
+        if (effectiveStorageType === 'localStorage') {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            const savedValue = localStorage.getItem(key);
+            if (savedValue !== null) {
+              setValue(JSON.parse(savedValue));
+            }
           }
-        } else if (storageType === 'indexedDB') {
-          const db = await openDB();
-          const transaction = db.transaction(storeName, 'readonly');
-          const store = transaction.objectStore(storeName);
-          const savedValue = await store.get(key);
-          if (savedValue !== undefined) {
-            setValue(savedValue);
+        } else if (effectiveStorageType === 'indexedDB') {
+          try {
+            const db = await openDB();
+            const transaction = db.transaction(storeName, 'readonly');
+            const store = transaction.objectStore(storeName);
+            const savedValue = await store.get(key);
+            if (savedValue !== undefined) {
+              setValue(savedValue);
+            }
+          } catch (error) {
+            console.error('IndexedDB operation failed:', error);
+            // Fallback to localStorage if IndexedDB fails
+            if (typeof window !== 'undefined' && window.localStorage) {
+              const savedValue = localStorage.getItem(key);
+              if (savedValue !== null) {
+                setValue(JSON.parse(savedValue));
+              }
+            }
           }
         }
       } catch (error) {
@@ -51,6 +86,11 @@ export function useStorage<T>(
   // Helper function to open IndexedDB
   const openDB = (): Promise<IDBDatabase> => {
     return new Promise((resolve, reject) => {
+      if (!isIndexedDBSupported()) {
+        reject(new Error('IndexedDB not supported'));
+        return;
+      }
+      
       const request = indexedDB.open(dbName, 1);
       
       request.onupgradeneeded = (event) => {
@@ -76,13 +116,25 @@ export function useStorage<T>(
       const valueToStore = newValue instanceof Function ? newValue(value) : newValue;
       setValue(valueToStore);
       
-      if (storageType === 'localStorage') {
-        localStorage.setItem(key, JSON.stringify(valueToStore));
-      } else if (storageType === 'indexedDB') {
-        const db = await openDB();
-        const transaction = db.transaction(storeName, 'readwrite');
-        const store = transaction.objectStore(storeName);
-        await store.put(valueToStore, key);
+      const effectiveStorageType = getEffectiveStorageType();
+      
+      if (effectiveStorageType === 'localStorage') {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.setItem(key, JSON.stringify(valueToStore));
+        }
+      } else if (effectiveStorageType === 'indexedDB') {
+        try {
+          const db = await openDB();
+          const transaction = db.transaction(storeName, 'readwrite');
+          const store = transaction.objectStore(storeName);
+          await store.put(valueToStore, key);
+        } catch (error) {
+          console.error('IndexedDB save failed, falling back to localStorage:', error);
+          // Fallback to localStorage if IndexedDB fails
+          if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem(key, JSON.stringify(valueToStore));
+          }
+        }
       }
     } catch (error) {
       console.error('Error saving to storage:', error);
