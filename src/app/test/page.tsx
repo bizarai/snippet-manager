@@ -7,18 +7,39 @@ import Link from 'next/link';
 export default function TestPage() {
   const pathname = usePathname();
   
+  // Handle basePath for GitHub Pages links
+  const getBasePath = () => {
+    // In production, we need to include the basePath
+    if (process.env.NODE_ENV === 'production') {
+      return '/snippet-manager';
+    }
+    return '';
+  };
+  
   const handleDragStart = (e: React.DragEvent) => {
-    // Add source URL and page title to the drag data
-    e.dataTransfer.setData('text/source-url', window.location.origin + pathname);
-    e.dataTransfer.setData('text/page-title', 'Test Content Page');
-    e.dataTransfer.setData('text/plain', e.currentTarget.textContent || '');
+    // Get the full URL including basePath
+    let origin = '';
+    try {
+      origin = window.location.origin;
+    } catch (error) {
+      console.error('Failed to get window.location.origin:', error);
+    }
     
-    // Make sure data is properly set with fallbacks
-    console.log('Drag started:', {
-      url: window.location.origin + pathname,
-      title: 'Test Content Page',
-      text: e.currentTarget.textContent
-    });
+    // Add source URL and page title to the drag data
+    try {
+      e.dataTransfer.setData('text/source-url', origin + pathname);
+      e.dataTransfer.setData('text/page-title', 'Test Content Page');
+      e.dataTransfer.setData('text/plain', e.currentTarget.textContent || '');
+      
+      // Make sure data is properly set with fallbacks
+      console.log('Drag started:', {
+        url: origin + pathname,
+        title: 'Test Content Page',
+        text: e.currentTarget.textContent
+      });
+    } catch (error) {
+      console.error('Error during drag start:', error);
+    }
   };
 
   return (
@@ -62,7 +83,7 @@ function HelloWorld() {
 
       <div className="fixed bottom-4 right-4">
         <Link
-          href="/"
+          href={`${getBasePath()}/`}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
         >
           Back to Snippet Manager
