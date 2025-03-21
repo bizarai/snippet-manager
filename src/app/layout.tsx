@@ -7,6 +7,12 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Snippet Manager",
   description: "Save and manage text snippets from the web",
+  icons: {
+    icon: [
+      { url: './file.svg', type: 'image/svg+xml' },
+      { url: './favicon.ico', sizes: 'any' }
+    ],
+  }
 };
 
 export default function RootLayout({
