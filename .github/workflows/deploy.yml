@@ -18,8 +18,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          persist-credentials: true # This ensures git credentials are preserved
-      
+          persist-credentials: true
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -34,6 +34,9 @@ jobs:
       
       - name: Build
         run: npm run build
+        env:
+          # Make sure build process knows it's in production
+          NODE_ENV: production
         
       - name: Copy .nojekyll to output
         run: cp .nojekyll out/
@@ -44,4 +47,4 @@ jobs:
           folder: out
           branch: gh-pages
           clean: true
-          token: ${{ secrets.GITHUB_TOKEN }} # Use the automatic token
+          token: ${{ secrets.GITHUB_TOKEN }}
